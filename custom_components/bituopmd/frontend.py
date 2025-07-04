@@ -3,6 +3,7 @@ from homeassistant.components.http import HomeAssistantView
 from homeassistant.components.panel_custom import async_register_panel
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from .const import DOMAIN, CONF_HOST_IP
+from homeassistant.components.http import StaticPathConfig
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -54,11 +55,12 @@ class DeviceProxyView(HomeAssistantView):
 
 async def setup_frontend(hass):
     """Set up the frontend for the BituoPMD integration."""
-    hass.http.register_static_path(
-        "/custom_components/bituopmd/www/bituo_panel.js",
-        hass.config.path("custom_components/bituopmd/www/bituo_panel.js"),
+    await hass.http.async_register_static_paths([
+        StaticPathConfig("/custom_components/bituopmd/www/bituo_panel.js", 
+                         "/config/custom_components/bituopmd/www/bituo_panel.js",
         False
-    )
+        )
+    ])
 
     # Register the panel only once
     if not hass.data.get(f"{DOMAIN}_panel_registered"):

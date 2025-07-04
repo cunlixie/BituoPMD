@@ -9,7 +9,7 @@ from .frontend import setup_frontend
 
 _LOGGER = logging.getLogger(__name__)
 
-PLATFORMS = [Platform.BUTTON, Platform.SWITCH]
+PLATFORMS = [Platform.SENSOR, Platform.BUTTON, Platform.SWITCH]
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up BituoPMD integration from a config entry."""
@@ -18,7 +18,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     host_ip = entry.data[CONF_HOST_IP]
     _LOGGER.info("Setting up BituoPMD integration for %s", host_ip)
-
+    
     # Initialize the data dictionary for this entry
     hass.data[DOMAIN][entry.entry_id] = {}
 
@@ -40,12 +40,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     )
 
     # Forward the setup to the sensor platforms
-    try:
-        await hass.config_entries.async_forward_entry_setup(entry, Platform.SENSOR)
-    except ConfigEntryNotReady as e:
-        _LOGGER.error("Error setting up sensor platform for BituoPMD: %s", e)
-        raise ConfigEntryNotReady from e
-    
     try:
         await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     except ConfigEntryNotReady as e:

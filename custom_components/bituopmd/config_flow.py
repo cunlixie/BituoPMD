@@ -44,7 +44,7 @@ class BituoFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         self.host = discovery_info.host
         self.name = discovery_info.name.split(".")[0]
 
-        if "bituotechnik" not in self.name.lower():
+        if "energysensor" not in self.name.lower():
             return self.async_abort(reason="not_bituotechnik_device")
         
         existing_entries = self._async_current_entries()
@@ -233,7 +233,7 @@ class BituoFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             info = zeroconf.get_service_info(service_type, name)
             if info:
                 address = socket.inet_ntoa(info.addresses[0])
-                if "bituotechnik" in name.lower():  # Ensure the device name contains 'bituotechnik'
+                if "energysensor" in name.lower():  # Ensure the device name contains 'bituotechnik'
                     # Check if the device is already in the list or already configured
                     existing_entries = self._async_current_entries()
                     

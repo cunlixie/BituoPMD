@@ -77,7 +77,7 @@ class BituoDataUpdateCoordinator(DataUpdateCoordinator):
             return {
                 "model": data.get("productModel") or data.get("ProductModel", "Unknown Model"),
                 "fw_version": data.get("FWVersion") or data.get("fwVersion", "Unknown"),
-                "manufacturer": data.get("Manufactor", "Unknown"),
+                "manufacturer": "BITUO TECHNIK",
                 "mcu_version": data.get("MCUVersion", "Unknown"),
             }
         except Exception as err:

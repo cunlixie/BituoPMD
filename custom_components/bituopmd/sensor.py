@@ -85,20 +85,19 @@ STATE_CLASSES = {
     "rssi": SensorStateClass.MEASUREMENT,
 }
 
-EXCLUDE_FIELDS = {"Post", "Config485", "MqttStatus", "ProductModel", "SerialNumber", "DeviceType", "FWVersion", "MCUVersion", "Manufactor"}
+EXCLUDE_FIELDS = {"Post", "Time", "Config485", "MqttStatus", "ProductModel", "IP", "SerialNumber", "DeviceType", "FWVersion", "MCUVersion", "Manufactor"}
 
 async def async_setup_entry(hass, entry, async_add_entities):
     """Set up sensor platform."""
     host_ip = entry.data[CONF_HOST_IP]
     current_scan_interval = settings["devices"].get(host_ip, {}).get("scan_interval", 5)
     coordinator = BituoDataUpdateCoordinator(hass, host_ip, current_scan_interval)
-    await coordinator.async_config_entry_first_refresh()
-
     # Store the coordinator so it can be accessed by other platforms like button
     hass.data.setdefault(DOMAIN, {})
     hass.data[DOMAIN][entry.entry_id] = {
         'sensor_coordinator': coordinator
     }
+    await coordinator.async_config_entry_first_refresh()
 
     # Fetch device model and firmware version
     try:
@@ -206,7 +205,7 @@ class BituoDataUpdateCoordinator(DataUpdateCoordinator):
             return {
                 "model": data.get("ProductModel", "Unknown Model"),
                 "fw_version": data.get("FWVersion", "Unknown"),
-                "manufacturer": data.get("Manufactor", "Unknown"),
+                "manufacturer": "BITUO TECHNIK",
                 "mcu_version": data.get("MCUVersion", "Unknown"),
             }
         except Exception as err:
@@ -346,7 +345,10 @@ class BituoSensor(CoordinatorEntity, SensorEntity):
     @property
     def native_value(self):
         """Return the native state of the sensor."""
-        return self.coordinator.data.get(self._field)
+        value = self.coordinator.data.get(self._field)
+        if value is None:
+            return 0  # 或其它合适的默认值
+        return value
 
     @property
     def native_unit_of_measurement(self):

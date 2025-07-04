@@ -1,6 +1,7 @@
 import logging
 import requests
 from datetime import timedelta
+import asyncio
 from homeassistant.components.button import ButtonEntity
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.update_coordinator import (
@@ -26,7 +27,7 @@ async def async_setup_entry(hass, entry, async_add_entities):
         device_info = {
             "model": data.get("productModel") or data.get("ProductModel", "Unknown Model"),
             "fw_version": data.get("FWVersion") or data.get("fwVersion", "Unknown"),
-            "manufacturer": data.get("Manufactor", "Unknown"),
+            "manufacturer": "BITUO TECHNIK",
             "mcu_version": data.get("MCUVersion", "Unknown"),
         }
     except Exception as e:
@@ -38,7 +39,15 @@ async def async_setup_entry(hass, entry, async_add_entities):
             "mcu_version": "Unknown",
         }
 
-    sensor_coordinator = hass.data[DOMAIN][entry.entry_id]['sensor_coordinator']
+    for _ in range(50):
+        try:
+            sensor_coordinator = hass.data[DOMAIN][entry.entry_id]['sensor_coordinator']
+            break
+        except (KeyError, AttributeError):
+            await asyncio.sleep(0.1)
+    else:
+        _LOGGER.error("sensor_coordinator not found for entry %s after waiting", entry.entry_id)
+        return
 
     buttons = [
         DataRefreshButton(sensor_coordinator, host_ip, device_info["model"], device_info["fw_version"], device_info["manufacturer"], device_info["mcu_version"]),
