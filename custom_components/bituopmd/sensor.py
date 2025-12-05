@@ -9,11 +9,16 @@ from homeassistant.const import (
     UnitOfElectricCurrent,
     UnitOfElectricPotential,
     UnitOfApparentPower,
-    POWER_VOLT_AMPERE_REACTIVE,
     UnitOfPower,
     PERCENTAGE,
     SIGNAL_STRENGTH_DECIBELS,
 )
+try:
+    from homeassistant.const import UnitOfReactivePower
+    POWER_VOLT_AMPERE_REACTIVE = UnitOfReactivePower.VOLT_AMPERE_REACTIVE
+except (ImportError, AttributeError):
+    from homeassistant.const import POWER_VOLT_AMPERE_REACTIVE
+
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.components.sensor import SensorEntity, SensorDeviceClass, SensorStateClass
 from homeassistant.helpers.update_coordinator import (
