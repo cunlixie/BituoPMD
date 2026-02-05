@@ -325,8 +325,12 @@ class BituoSensor(CoordinatorEntity, SensorEntity):
     @staticmethod
     def format_field_entity_id(field):
         """Format field name to be more suitable for unique_id."""
-        formatted_name = ''.join(['_' + char.lower() if char.isupper() else char for char in field])
-        formatted_name = formatted_name.replace("x", "_x").replace("y", "_y").replace("z", "_z")
+        import re
+        
+        formatted_name = re.sub(r'([a-z0-9])([A-Z])', r'\1_\2', field).lower()
+        
+        formatted_name = re.sub(r'_+', '_', formatted_name)
+        
         return formatted_name.strip('_')
 
     @staticmethod

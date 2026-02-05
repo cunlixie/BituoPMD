@@ -4,7 +4,8 @@ import socket
 import requests
 from homeassistant import config_entries
 from homeassistant.core import callback
-from homeassistant.components.zeroconf import async_get_instance, ZeroconfServiceInfo
+from homeassistant.components.zeroconf import async_get_instance
+from homeassistant.helpers.service_info.zeroconf import ZeroconfServiceInfo
 import voluptuous as vol
 from zeroconf import ServiceBrowser, ServiceStateChange
 from .const import DOMAIN, CONF_HOST_IP
