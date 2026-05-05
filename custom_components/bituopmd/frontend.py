@@ -55,10 +55,18 @@ class DeviceProxyView(HomeAssistantView):
 
 async def setup_frontend(hass):
     """Set up the frontend for the BituoPMD integration."""
+#    await hass.http.async_register_static_paths([
+#        StaticPathConfig("/custom_components/bituopmd/www/bituo_panel.js", 
+#                         "/config/custom_components/bituopmd/www/bituo_panel.js",
+#       False
+#        )
+#     ])
+        # 注册整个 www 目录的静态文件服务
     await hass.http.async_register_static_paths([
-        StaticPathConfig("/custom_components/bituopmd/www/bituo_panel.js", 
-                         "/config/custom_components/bituopmd/www/bituo_panel.js",
-        False
+        StaticPathConfig(
+            "/custom_components/bituopmd/www",
+            hass.config.path("custom_components/bituopmd/www"),
+            cache_headers=False
         )
     ])
 

@@ -63,8 +63,9 @@ def load_ota_versions():
         _LOGGER.error(f"Error decoding OTA versions file: {err}")
         return {}
 
-settings = load_settings()
-ota_versions = load_ota_versions()
+# 避免在模块导入时进行阻塞 I/O，使用异步上下文加载
+settings = {}
+ota_versions = {}
 
 
 
@@ -95,7 +96,15 @@ EXCLUDE_FIELDS = {"Post", "Time", "Config485", "MqttStatus", "ProductModel", "IP
 async def async_setup_entry(hass, entry, async_add_entities):
     """Set up sensor platform."""
     host_ip = entry.data[CONF_HOST_IP]
-    current_scan_interval = settings["devices"].get(host_ip, {}).get("scan_interval", 5)
+
+    # 在线程池中加载配置文件以避免阻塞事件循环
+    global settings, ota_versions
+    settings, ota_versions = await asyncio.gather(
+        hass.async_add_executor_job(load_settings),
+        hass.async_add_executor_job(load_ota_versions),
+    )
+
+    current_scan_interval = settings.get("devices", {}).get(host_ip, {}).get("scan_interval", 5)
     coordinator = BituoDataUpdateCoordinator(hass, host_ip, current_scan_interval)
     # Store the coordinator so it can be accessed by other platforms like button
     hass.data.setdefault(DOMAIN, {})
@@ -131,8 +140,8 @@ async def async_setup_entry(hass, entry, async_add_entities):
         device_id = call.data.get("device_id")  # 获取设备 ID
 
         # 更新特定设备的频率配置
-        settings["devices"].setdefault(device_id, {})["scan_interval"] = frequency
-        save_settings(settings)
+        settings.setdefault("devices", {}).setdefault(device_id, {})["scan_interval"] = frequency
+        await hass.async_add_executor_job(save_settings, settings)
         
         # 立即刷新设备数据
         await coordinator.async_refresh()
@@ -148,7 +157,8 @@ class BituoDataUpdateCoordinator(DataUpdateCoordinator):
     def __init__(self, hass, host_ip, scan_interval):
         """Initialize."""
         self.host_ip = host_ip
-        self.ota_versions = load_ota_versions()
+        # 使用 async_setup_entry 中异步加载的 ota_versions，避免阻塞 I/O
+        self.ota_versions = ota_versions or {}
         self.ota_entity = None  # init ota_entity
         super().__init__(hass, _LOGGER, name=DOMAIN, update_interval=timedelta(seconds=scan_interval))
 
